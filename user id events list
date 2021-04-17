@@ -1,0 +1,21 @@
+SELECT event_name, COUNT(event_name) AS EVENTS, COUNT(DISTINCT event_params.value.string_value) AS USERS
+FROM
+`bankorange-mobile-bank.analytics_177912472.events_20210*` as t
+CROSS JOIN UNNEST (t.event_params) AS event_params
+WHERE _TABLE_SUFFIX BETWEEN '213' and '413' AND event_params.key = 'ext_code' AND event_params.value.string_value IN 
+(
+   SELECT DISTINCT ga.event_params_value
+FROM 
+`bankorange-mobile-bank.CFT.Lis_string` zk
+INNER JOIN 
+(SELECT
+  event_params.value.string_value as event_params_value
+FROM
+  `bankorange-mobile-bank.analytics_177912472.events_20210*` AS t
+  CROSS JOIN UNNEST (t.event_params) AS event_params
+WHERE _TABLE_SUFFIX BETWEEN '213' and '413' AND event_name = 'main_screen' AND event_params.key = 'ext_code') ga
+ON
+zk.id = ga.event_params_value 
+)
+GROUP BY event_name
+ORDER BY USERS DESC
